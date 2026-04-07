@@ -7,10 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/10xPtJDL_XBc_VmRttW7njcDNzb01PB34
 """
 
-!pip install -q --upgrade langchain langchain-google-genai langchain-experimental pandas
-!pip install streamlit
-!pip install -U -q google-generativeai langchain-google-genai
-
 import streamlit as st
 import pandas as pd
 import os
