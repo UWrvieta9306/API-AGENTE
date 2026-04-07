@@ -67,7 +67,7 @@ with st.sidebar:
     periodo = st.date_input("Rango de fechas")
 # 1. Configuración de API Key (vía Secrets o Sidebar)
 # Añadimos un 'key' único al final
-api_key = st.sidebar.text_input("Introduce tu Google API Key", type="password", key="api_key_corporativa")
+#api_key = st.sidebar.text_input("Introduce tu Google API Key", type="password", key="api_key_corporativa")
 
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
