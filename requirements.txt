@@ -1,6 +1,7 @@
 streamlit
 pandas
+matplotlib
 langchain-google-genai
 langchain-experimental
+pyarrow
 tabulate
-matplotlib
