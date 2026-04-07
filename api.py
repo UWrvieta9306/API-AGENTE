@@ -15,9 +15,56 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
 # Configuración de la página
-st.set_page_config(page_title="Agente Hidrológico CDMX", layout="wide")
+# Configuración de la página
+st.set_page_config(page_title="Análisis Hidrología | Rotoplas", layout="wide")
 st.title("🌊 Análisis de Hidrología CDMX")
-
+st.markdown("""
+    <style>
+    /* Fondo general */
+    .stApp {
+        background-color: #F4F7F9;
+    }
+    
+    /* Personalización del Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #004C97;
+    }
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    /* Títulos y fuentes */
+    h1 {
+        color: #004C97;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 700;
+    }
+    
+    /* Estilo de métricas (KPIs) */
+    div[data-testid="stMetricValue"] {
+        color: #00A9E0;
+    }
+    
+    /* Botones estilo Rotoplas */
+    .stButton>button {
+        background-color: #00A9E0;
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 25px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+with st.sidebar:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Rotoplas_logo.svg/2560px-Rotoplas_logo.svg.png", width=200)
+    st.markdown("---")
+    st.subheader("🔑 Configuración")
+    api_key = st.text_input("Introduce tu Google API Key", type="password")
+    
+    st.markdown("---")
+    st.subheader("📍 Filtros de Análisis")
+    alcaldia = st.selectbox("Seleccionar Alcaldía", ["Iztapalapa", "Benito Juárez", "Coyoacán"])
+    periodo = st.date_input("Rango de fechas")
 # 1. Configuración de API Key (vía Secrets o Sidebar)
 api_key = st.sidebar.text_input("Introduce tu Google API Key", type="password")
 
