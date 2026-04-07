@@ -9,6 +9,7 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
@@ -46,6 +47,7 @@ if api_key:
 Eres un Agente de Análisis de Datos de Hidrología.
 TU REGLA DE ORO: No saludes ni des introducciones. Responde únicamente en el formato esperado por la herramienta.
 Tu objetivo es analizar datos, generar visualizaciones y redactar reportes.
+SIEMPRE que el usuario pida una visualización o comparativa visual, usa matplotlib. NO intentes mostrar el gráfico con texto, genera una imagen real. No es necesario guardar el archivo, solo asegúrate de que el código de Python cree la figura
 
 Siempre que necesites ejecutar código, tu respuesta debe seguir el formato:
 Thought: (Tu razonamiento sobre lo que necesitas hacer para responder la pregunta, los pasos que vas a seguir y las columnas o filtros que usarás. Este pensamiento no es para el usuario. Es para el agente interno.)
@@ -105,13 +107,16 @@ Datos disponibles:
     )
 
 
-    # 4. Interfaz de Chat
+# 4. Interfaz de Chat
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    # Mostrar historial de mensajes
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            # Si el mensaje guardado tenía un gráfico, aquí podrías manejarlo, 
+            # pero por ahora enfoquémonos en la respuesta actual.
 
     if prompt := st.chat_input("¿Qué quieres saber sobre el consumo hídrico?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -119,9 +124,23 @@ Datos disponibles:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            # Aquí el agente procesa y responde
-            response = agent.run(prompt)
-            st.markdown(response)
+            # 1. Ejecutamos el agente UNA SOLA VEZ
+            # Usamos un st.spinner para que el usuario sepa que está pensando
+            with st.spinner("Analizando datos..."):
+                response = agent.run(prompt)
+                st.markdown(response)
+            
+            # 2. TRUCO DE GRÁFICOS: Verificamos el buffer de Matplotlib
+            fig = plt.gcf() 
+            if fig.get_axes(): # Si el agente dibujó algo...
+                st.pyplot(fig)
+                plt.close(fig) # Cerramos la figura para liberar memoria
+            else:
+                plt.close(fig) # Cerramos aunque esté vacía para evitar basura visual
+
+            # 3. Guardar la respuesta en el historial
             st.session_state.messages.append({"role": "assistant", "content": response})
+
 else:
-    st.warning("Por favor, ingresa tu API Key en la barra lateral para comenzar.")
+    st.sidebar.info("Ingresa tu Google API Key para activar el agente.")
+    st.warning("Esperando API Key...")
