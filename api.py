@@ -27,9 +27,10 @@ if api_key:
 
     @st.cache_data
     def load_data():
-        file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
-        url = f'https://drive.google.com/uc?id={file_id}'
-        return pd.read_csv(url)
+        #file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
+        #url = f'https://drive.google.com/uc?id={file_id}'
+        #return pd.read_csv(url)
+        return pd.read_parquet("Base_CDMX_ultra.parquet")
 
     df = load_data()
     st.write("### Vista previa de los datos", df.head(5))
