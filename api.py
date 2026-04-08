@@ -31,6 +31,7 @@ INSTRUCCIONES DE PROCESAMIENTO:
 4. Usa siempre operaciones vectorizadas de Pandas para mayor velocidad.
 
 Datos disponibles (además de los básicos):
+Utiliza gasto_litros_final para el calculo de consumo
 - Municipio: Nombre de la zona.
 Si has determinado la respuesta final a la pregunta, tu respuesta debe seguir el formato:
 Thought: (Tu razonamiento sobre cómo llegaste a la respuesta final)
