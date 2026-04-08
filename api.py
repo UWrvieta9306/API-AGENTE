@@ -38,9 +38,7 @@ with st.sidebar:
         #url = f'https://drive.google.com/uc?id={file_id}'
         #return pd.read_csv(url)
         return pd.read_parquet("Base_CDMX_ultra.parquet")
-    
-    df_final = pd.concat(list_dfs, ignore_index=True)
-    
+    df_final = load_data()
     # Normalización de fechas para el agente
     if 'fecha_lectura_time' in df_final.columns:
         df_final['fecha_lectura_time'] = pd.to_datetime(df_final['fecha_lectura_time'], errors='coerce')
