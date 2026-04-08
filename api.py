@@ -97,25 +97,10 @@ with st.sidebar:
 # --- 3. CARGA DE DATOS MULTIAERCHIVO ---
     @st.cache_data
     def load_data():
-            archivo = "2026Q1.parquet"
-            if os.path.exists(archivo):
-                try:
-            # Forzamos fastparquet para evitar el error ArrowInvalid
-                    df = pd.read_parquet(archivo, engine='fastparquet')
-            
-            # Limpieza básica de fechas si existe la columna
-                    if 'fecha_lectura_time' in df.columns:
-                        df['fecha_lectura_time'] = pd.to_datetime(df['fecha_lectura_time'], errors='coerce')
-                        df = df.dropna(subset=['fecha_lectura_time'])
-                    return df
-                except Exception as e:
-                    st.error(f"Error al leer el archivo con fastparquet: {e}")
-                    # Intento de rescate con pyarrow si el anterior falla catastróficamente
-                    return pd.read_parquet(archivo, engine='pyarrow')
-            else:
-                st.error(f"No se encontró el archivo {archivo}")
-                return pd.DataFrame()
-  
+        #file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
+        #url = f'https://drive.google.com/uc?id={file_id}'
+        #return pd.read_csv(url)
+        return pd.read_parquet("Base_CDMX_ultra.parquet")
 
 # --- 4. LÓGICA PRINCIPAL ---
 if api_key:
