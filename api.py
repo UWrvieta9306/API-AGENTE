@@ -38,13 +38,13 @@ with st.sidebar:
         #url = f'https://drive.google.com/uc?id={file_id}'
         #return pd.read_csv(url)
         return pd.read_parquet("Base_CDMX_ultra.parquet")
-    df = load_data()
+
   
 
 # --- 4. LÓGICA PRINCIPAL ---
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
-    df = load_full_data() # La función que unifica tus 6 parquets
+    df = load_data()
     
     if not df.empty:
         llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
