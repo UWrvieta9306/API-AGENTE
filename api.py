@@ -13,7 +13,12 @@ Siempre que necesites ejecutar código, tu respuesta debe seguir el formato:
 Thought: (Tu razonamiento sobre lo que necesitas hacer para responder a la pregunta, los pasos que vas a seguir y las columnas o filtros que usarás. Este pensamiento no es para el usuario. Es para el agente interno.)
 Action: python_repl_ast
 Action Input: (Tu código Python para ejecutar)
-
+Tu función es analizar el dataframe 'df'.
+        INSTRUCCIÓN DE FORMATO:
+        1. Si necesitas usar Python, genera la acción de código primero.
+        2. Solo cuando tengas el resultado del código, genera tu respuesta final.
+        3. No mezcles código y respuesta final en el mismo paso.
+        4. Mantén un tono corporativo, profesional y basado en datos de hidrología.
 CAPACIDADES:
 1. Puedes usar matplotlib para generar gráficos. Siempre usa 'plt.show()' al final de un gráfico.
 2. Puedes realizar comparativas temporales si los datos tienen columnas de fecha o año.
@@ -95,7 +100,7 @@ with st.sidebar:
         #file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
         #url = f'https://drive.google.com/uc?id={file_id}'
         #return pd.read_csv(url)
-        return pd.read_parquet("Base_CDMX_ultra.parquet")
+        return pd.read_parquet("2026Q1.parquet")
 
   
 
@@ -129,8 +134,7 @@ if api_key:
             allow_dangerous_code=True,
             handle_parsing_errors=True,
             prefix=Prefix_ag,
-            agent_type="zero-shot-react-description", # <--- Cambio clave aquí
-            
+            agent_type=AgentType.OPENAI_FUNCTIONS,            
         )
 
         # Interfaz de Chat
