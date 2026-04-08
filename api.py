@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain.agents import AgentType
+
 # --- 1. CONFIGURACIÓN VISUAL ROTOPLAS ---
 st.set_page_config(page_title="Análisis Hidrología | Rotoplas", layout="wide")
 
@@ -59,9 +59,10 @@ def load_full_data():
 # --- 4. LÓGICA PRINCIPAL ---
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
-    df = load_full_data()
-
+    df = load_full_data() # La función que unifica tus 6 parquets
+    
     if not df.empty:
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
         st.title("🌊 Análisis de Hidrología CDMX")
         
         # KPIs rápidos
@@ -77,13 +78,13 @@ if api_key:
         )
 
         # Usamos AgentType.ZERO_SHOT_REACT_DESCRIPTION para mayor estabilidad en el parseo
-        agent = create_pandas_dataframe_agent(
+       agent = create_pandas_dataframe_agent(
             llm=llm,
             df=df,
             verbose=True,
             allow_dangerous_code=True,
             handle_parsing_errors=True,
-            agent_type=AgentType.ZERO_SHOT_REACT_DESCRIPTION, 
+            agent_type="zero-shot-react-description", # <--- Cambio clave aquí
         )
 
         # Interfaz de Chat
