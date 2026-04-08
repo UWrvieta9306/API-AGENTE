@@ -79,7 +79,8 @@ st.markdown("""
 
 # --- 2. SIDEBAR ---
 with st.sidebar:
-    st.title("🚰 Rotoplas BI")
+    st.title("Rotoplas BI")
+    st.image('Logo_de_Rotoplas.svg.png', width=200)
     st.markdown("---")
     st.subheader("🔑 Configuración")
     api_key = st.text_input("Introduce tu Google API Key", type="password", key="api_key_rotoplas")
