@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
-from langchain.agents.agent_types import AgentType
-
+from langchain.agents import AgentType
 # --- 1. CONFIGURACIÓN VISUAL ROTOPLAS ---
 st.set_page_config(page_title="Análisis Hidrología | Rotoplas", layout="wide")
 
