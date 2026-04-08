@@ -1,7 +1,9 @@
 streamlit
 pandas
 matplotlib
+pyarrow
+fastparquet
+langchain
+langchain-community
 langchain-google-genai
 langchain-experimental
-pyarrow
-tabulate
