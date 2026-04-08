@@ -132,7 +132,7 @@ if api_key:
             allow_dangerous_code=True,
             handle_parsing_errors=True,
             prefix=Prefix_ag,
-            agent_type=AgentType.OPENAI_FUNCTIONS,            
+            agent_type="openai-functions",            
         )
 
         # Interfaz de Chat
