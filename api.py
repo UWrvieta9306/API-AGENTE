@@ -35,34 +35,55 @@ with st.sidebar:
 # --- 3. CARGA Y UNIFICACIÓN DE LOS 4 ARCHIVOS ---
 @st.cache_data
 def load_full_dataset():
-    # Lista de tus 4 archivos seccionados
+    # Lista exacta con tus nuevos nombres de archivo
     archivos = [
-        "Base_2025_P1.parquet", # Mes 1-4 2025
-        "Base_2025_P2.parquet", # Mes 4-8 2025
-        "Base_2025_P3.parquet", # Mes 8-12 2025
-        "Base_2026_P1.parquet"  # Mes 1-6 2026
+        "2025Q1.parquet",    # Enero - Marzo 2025
+        "2025Q2P1.parquet",  # Abril - Mayo 2025
+        "2025Q2P2.parquet",  # Mayo - Junio 2025
+        "2025Q3P1.parquet",  # Julio - Agosto 2025
+        "2025Q3P2.parquet",  # Agosto - Septiembre 2025
+        "2026Q1.parquet"     # Enero - Marzo 2026
     ]
     
     list_dfs = []
+    archivos_faltantes = []
+
     for f in archivos:
         if os.path.exists(f):
-            list_dfs.append(pd.read_parquet(f))
+            try:
+                temp_df = pd.read_parquet(f)
+                list_dfs.append(temp_df)
+            except Exception as e:
+                st.sidebar.error(f"Error al leer {f}: {e}")
         else:
-            # Si el nombre es diferente, asegúrate de ajustarlo aquí
-            st.sidebar.warning(f"Archivo {f} no detectado.")
+            archivos_faltantes.append(f)
+    
+    # Notificación en el sidebar si falta algo, pero permite continuar
+    if archivos_faltantes:
+        st.sidebar.warning(f"⚠️ Archivos no encontrados: {', '.join(archivos_faltantes)}")
     
     if not list_dfs:
         return pd.DataFrame()
     
-    # Concatenar todos en un solo DataFrame
+    # Concatenar todos los archivos en uno solo
     df_unificado = pd.concat(list_dfs, ignore_index=True)
     
-    # Asegurar que la fecha sea reconocida como tal
+    # --- LIMPIEZA DE DATOS CRÍTICA ---
+    # 1. Convertir fecha a datetime
     if 'fecha_lectura_time' in df_unificado.columns:
-        df_unificado['fecha_lectura_time'] = pd.to_datetime(df_unificado['fecha_lectura_time'])
+        df_unificado['fecha_lectura_time'] = pd.to_datetime(df_unificado['fecha_lectura_time'], errors='coerce')
+        # Eliminar filas sin fecha válida si las hubiera
+        df_unificado = df_unificado.dropna(subset=['fecha_lectura_time'])
+        # Ordenar cronológicamente para que los gráficos salgan bien
+        df_unificado = df_unificado.sort_values('fecha_lectura_time')
     
-    return df_unificado
+    # 2. Asegurar que los litros sean numéricos
+    cols_numericas = ['volumen_actual_litros', 'capacidad_litros', 'porcentaje_nivel_liquido']
+    for col in cols_numericas:
+        if col in df_unificado.columns:
+            df_unificado[col] = pd.to_numeric(df_unificado[col], errors='coerce')
 
+    return df_unificado
 # --- 4. LÓGICA PRINCIPAL ---
 if api_key:
     os.environ["GOOGLE_API_KEY"] = api_key
