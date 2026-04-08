@@ -142,7 +142,6 @@ if api_key:
         max_output_tokens=None,
         timeout=None,
         max_retries=2,)
-        custom_prefix = 
     agent = create_pandas_dataframe_agent(
         llm=llm,
         df=df,
