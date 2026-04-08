@@ -38,13 +38,8 @@ with st.sidebar:
         #url = f'https://drive.google.com/uc?id={file_id}'
         #return pd.read_csv(url)
         return pd.read_parquet("Base_CDMX_ultra.parquet")
-    df_final = load_data()
-    # Normalización de fechas para el agente
-    if 'fecha_lectura_time' in df_final.columns:
-        df_final['fecha_lectura_time'] = pd.to_datetime(df_final['fecha_lectura_time'], errors='coerce')
-        df_final = df_final.dropna(subset=['fecha_lectura_time']).sort_values('fecha_lectura_time')
-    
-    return df_final
+    df = load_data()
+  
 
 # --- 4. LÓGICA PRINCIPAL ---
 if api_key:
