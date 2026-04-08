@@ -4,6 +4,7 @@ matplotlib
 pyarrow
 fastparquet
 langchain
+tabulate
 langchain-community
 langchain-google-genai
 langchain-experimental
