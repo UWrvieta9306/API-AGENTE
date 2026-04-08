@@ -67,34 +67,64 @@ Datos disponibles:
       promedio_nivel_nacional,
       conteo_alarma_activa
 """
-# --- 1. CONFIGURACIÓN VISUAL ROTOPLAS ---
 st.set_page_config(page_title="Análisis Hidrología | Rotoplas", layout="wide")
-
+st.title("🌊 Análisis de Hidrología CDMX")
 st.markdown("""
     <style>
-    .stApp { background-color: #F4F7F9; }
-    [data-testid="stSidebar"] { background-color: #004C97; border-right: 3px solid #00A9E0; }
-    [data-testid="stSidebar"] * { color: white !important; }
-    h1 { color: #004C97; font-family: 'Helvetica Neue', sans-serif; font-weight: 800; }
-    .stMetric { background-color: white; padding: 15px; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
-    div[data-testid="stMetricValue"] { color: #00A9E0; }
-    .stButton>button { background-color: #00A9E0; color: white; border-radius: 25px; width: 100%; font-weight: bold; }
+    /* Fondo general */
+    .stApp {
+        background-color: #F4F7F9;
+    }
+    
+    /* Personalización del Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #004C97;
+    }
+    [data-testid="stSidebar"] * {
+        color: white !important;
+    }
+    
+    /* Títulos y fuentes */
+    h1 {
+        color: #004C97;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 700;
+    }
+    
+    /* Estilo de métricas (KPIs) */
+    div[data-testid="stMetricValue"] {
+        color: #00A9E0;
+    }
+    
+    /* Botones estilo Rotoplas */
+    .stButton>button {
+        background-color: #00A9E0;
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 10px 25px;
+    }
     </style>
     """, unsafe_allow_html=True)
-
-# --- 2. SIDEBAR ---
 with st.sidebar:
-    st.title("Rotoplas BI")
     st.image('Logo_de_Rotoplas.svg.png', width=200)
     st.markdown("---")
     st.subheader("🔑 Configuración")
-    api_key = st.text_input("Introduce tu Google API Key", type="password", key="api_key_rotoplas")
-    
-    st.markdown("---")
-    st.subheader("📍 Filtros")
-    alcaldia = st.selectbox("Seleccionar Alcaldía", ["Todas", "Iztapalapa", "Benito Juárez", "Coyoacán"])
+    api_key = st.text_input("Introduce tu Google API Key", type="password")
 
-# --- 3. CARGA DE DATOS MULTIAERCHIVO ---
+    st.markdown("---")
+    st.subheader("📍 Filtros de Análisis")
+    alcaldia = st.selectbox("Seleccionar Alcaldía", ["Iztapalapa", "Benito Juárez", "Coyoacán"])
+    periodo = st.date_input("Rango de fechas")
+# 1. Configuración de API Key (vía Secrets o Sidebar)
+# Añadimos un 'key' único al final
+#api_key = st.sidebar.text_input("Introduce tu Google API Key", type="password", key="api_key_corporativa")
+
+if api_key:
+    os.environ["GOOGLE_API_KEY"] = api_key
+
+    # 2. Carga de datos
+
     @st.cache_data
     def load_data():
         #file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
@@ -102,72 +132,61 @@ with st.sidebar:
         #return pd.read_csv(url)
         return pd.read_parquet("Base_CDMX_ultra.parquet")
 
-# --- 4. LÓGICA PRINCIPAL ---
-if api_key:
-    os.environ["GOOGLE_API_KEY"] = api_key
     df = load_data()
-    
-    if not df.empty:
-        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
-        st.title("🌊 Análisis de Hidrología CDMX")
-        
-        # KPIs rápidos
-        c1, c2, c3 = st.columns(3)
-        with c1: st.metric("Registros Cargados", f"{len(df):,}")
-        with c2: st.metric("Rango Temporal", "2025 - 2026")
-        with c3: st.metric("Estatus", "Conectado")
+    st.write("### Vista previa de los datos", df.head(5))
 
-        # Inicialización del Agente optimizado
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash", 
-            temperature=0
-        )
+    # 3. Inicialización del Agente
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        temperature=0,
+        max_output_tokens=None,
+        timeout=None,
+        max_retries=2,)
+        custom_prefix = 
+    agent = create_pandas_dataframe_agent(
+        llm=llm,
+        df=df,
+        verbose=True,
+        prefix=Prefix_ag,
+        allow_dangerous_code=True,
+        handle_parsing_errors=True
+    )
 
-        # Usamos AgentType.ZERO_SHOT_REACT_DESCRIPTION para mayor estabilidad en el parseo
 
-        agent = create_pandas_dataframe_agent(
-            llm=llm,
-            df=df,
-            verbose=True,
-            allow_dangerous_code=True,
-            handle_parsing_errors=True,
-            prefix=Prefix_ag,
-            agent_type="openai-functions",            
-        )
+# 4. Interfaz de Chat
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-        # Interfaz de Chat
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+    # Mostrar historial de mensajes
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            # Si el mensaje guardado tenía un gráfico, aquí podrías manejarlo, 
+            # pero por ahora enfoquémonos en la respuesta actual.
 
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+    if prompt := st.chat_input("¿Qué quieres saber sobre el consumo hídrico?"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-        if prompt := st.chat_input("¿Qué quieres saber sobre el consumo hídrico?"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+        with st.chat_message("assistant"):
+            # 1. Ejecutamos el agente UNA SOLA VEZ
+            # Usamos un st.spinner para que el usuario sepa que está pensando
+            with st.spinner("Analizando datos..."):
+                response = agent.run(prompt)
+                st.markdown(response)
 
-            with st.chat_message("assistant"):
-                with st.spinner("Analizando base histórica..."):
-                    try:
-                        # Ejecución del agente
-                        response = agent.invoke(prompt)
-                        # Dependiendo de la versión de LangChain, el resultado está en 'output'
-                        res_text = response.get("output", str(response))
-                        st.markdown(res_text)
-                        
-                        # Manejo de gráficos
-                        fig = plt.gcf()
-                        if fig.get_axes():
-                            st.pyplot(fig)
-                        plt.close('all')
-                        
-                        st.session_state.messages.append({"role": "assistant", "content": res_text})
-                    except Exception as e:
-                        st.error(f"Hubo un problema al procesar la respuesta: {e}")
+            # 2. TRUCO DE GRÁFICOS: Verificamos el buffer de Matplotlib
+            fig = plt.gcf() 
+            if fig.get_axes(): # Si el agente dibujó algo...
+                st.pyplot(fig)
+                plt.close(fig) # Cerramos la figura para liberar memoria
+            else:
+                plt.close(fig) # Cerramos aunque esté vacía para evitar basura visual
 
-    else:
-        st.error("No se encontraron los archivos .parquet. Asegúrate de que estén en la misma carpeta.")
+            # 3. Guardar la respuesta en el historial
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
 else:
-    st.warning("Introduce tu API Key para comenzar.")
+    st.sidebar.info("Ingresa tu Google API Key para activar el agente.")
+    st.warning("Esperando API Key...")
