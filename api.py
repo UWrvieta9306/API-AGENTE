@@ -32,20 +32,12 @@ with st.sidebar:
     alcaldia = st.selectbox("Seleccionar Alcaldía", ["Todas", "Iztapalapa", "Benito Juárez", "Coyoacán"])
 
 # --- 3. CARGA DE DATOS MULTIAERCHIVO ---
-@st.cache_data
-def load_full_data():
-    archivos = [
-        "2025Q1.parquet", "2025Q2P1.parquet", "2025Q2P2.parquet",
-        "2025Q3P1.parquet", "2025Q3P2.parquet", "2026Q1.parquet"
-    ]
-    
-    list_dfs = []
-    for f in archivos:
-        if os.path.exists(f):
-            list_dfs.append(pd.read_parquet(f))
-    
-    if not list_dfs:
-        return pd.DataFrame()
+    @st.cache_data
+    def load_data():
+        #file_id = '1bq9eLLaT5a386AhtGEKz2QuxzGzGwuAD'
+        #url = f'https://drive.google.com/uc?id={file_id}'
+        #return pd.read_csv(url)
+        return pd.read_parquet("Base_CDMX_ultra.parquet")
     
     df_final = pd.concat(list_dfs, ignore_index=True)
     
