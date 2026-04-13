@@ -43,7 +43,10 @@ if api_key:
     df = load_data()
 
     # --- 3. INICIALIZACIÓN DE LOS 3 AGENTES ---
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+    llm = ChatGoogleGenerativeAI( model="gemini-2.5-flash", temperature=0,
+        max_output_tokens=None,
+        timeout=None,
+        max_retries=2,))
 
     # Agente 1: El Analista (Basado en tu código de Pandas Agent)
     agent_analista = create_pandas_dataframe_agent(
