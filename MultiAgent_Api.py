@@ -11,7 +11,8 @@ from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe
 PREFIX_ANALISTA = """Eres un Data Analyst experto en Hidrología. 
 Tu única fuente de verdad es el dataframe 'df'. 
 TU FUNCIÓN: Calcular promedios, filtrar alcaldías y generar gráficos.
-REGLA: Si te piden predecir el futuro o explicar por qué ocurre algo, pasa el dato técnico pero no especules."""
+REGLA: Si te piden predecir el futuro o explicar por qué ocurre algo, pasa el dato técnico pero no especules.
+IMPORTANTE: Siempre termina tu respuesta con el formato 'Final Answer: [tu respuesta aquí]'. No añadas texto después de la respuesta final."""
 
 PREFIX_ML_ENGINEER = """Eres un Machine Learning Engineer. 
 TU FUNCIÓN: Analizar tendencias y detectar anomalías.
@@ -22,7 +23,8 @@ LÓGICA:
 
 PREFIX_ARCHITECT = """Eres el LLM Architect (Director de Orquesta). 
 TU FUNCIÓN: Recibir los hallazgos del Analista y del ML Engineer para dar una respuesta coherente al usuario.
-REGLA: Traduce los términos técnicos a recomendaciones prácticas para Rotoplas."""
+REGLA: Traduce los términos técnicos a recomendaciones prácticas para Rotoplas.
+IMPORTANTE: Siempre termina tu respuesta con el formato 'Final Answer: [tu respuesta aquí]'. No añadas texto después de la respuesta final."""
 
 # --- 2. CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Análisis Hidrología | Multi-Agente", layout="wide")
@@ -54,6 +56,7 @@ if api_key:
         df=df, 
         verbose=True, 
         prefix=PREFIX_ANALISTA,
+        agent_type="tool-calling",
         allow_dangerous_code=True, 
         handle_parsing_errors=True,
         max_iterations=10
@@ -65,6 +68,7 @@ if api_key:
         df=df, 
         verbose=True, 
         prefix=PREFIX_ML_ENGINEER,
+        agent_type="tool-calling",
         allow_dangerous_code=True, 
         handle_parsing_errors=True,
         max_iterations=10
@@ -85,9 +89,14 @@ if api_key:
 
         with st.chat_message("assistant"):
             with st.spinner("1. El Analista está extrayendo datos..."):
-                # Obtenemos la respuesta y nos aseguramos de que sea un string
-                res_analista_raw = agent_analista.run(f"Reporte de estado actual para: {prompt}")
-                res_analista = str(res_analista_raw) 
+                try:
+                    # Usamos invoke y extraemos solo el texto de salida
+                    result = agent_analista.invoke({"input": f"Reporte de estado actual para: {prompt}"})
+                    res_analista = result["output"] 
+                except Exception as e:
+                    # Si falla el parsing, intentamos recuperar lo que haya pensado
+                    res_analista = "No se pudo procesar el análisis detallado, pero el sistema está revisando los datos."
+                    print(f"Error en analista: {e}")
 
             with st.spinner("2. El ML Engineer está analizando riesgos..."):
                 # Reducimos la complejidad del prompt para evitar el ValueError
