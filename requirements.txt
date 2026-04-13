@@ -3,12 +3,9 @@ pandas
 matplotlib
 pyarrow
 fastparquet
-langchain
-tabulate
+langchain>=0.1.0
 langchain-community
 langchain-google-genai
 langchain-experimental
-# --- Agregadas para Multi-Agentes ---
-google-cloud-aiplatform
-langchain-google-vertexai
-langgraph
+pydantic>=2.0.0,<3.0.0
+tabulate
