@@ -82,53 +82,50 @@ if api_key:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    if prompt := st.chat_input("Ej: ¿Hay fugas en Iztapalapa y cuánto durará el agua?"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    # ... (Todo tu código anterior de carga de datos y definición de agentes) ...
 
-        with st.chat_message("assistant"):
-            with st.spinner("1. El Analista está extrayendo datos..."):
-                try:
-                    # Usamos invoke y extraemos solo el texto de salida
-                    result = agent_analista.invoke({"input": f"Reporte de estado actual para: {prompt}"})
-                    res_analista = result["output"] 
-                except Exception as e:
-                    # Si falla el parsing, intentamos recuperar lo que haya pensado
-                    res_analista = "No se pudo procesar el análisis detallado, pero el sistema está revisando los datos."
-                    print(f"Error en analista: {e}")
+if prompt := st.chat_input("¿Qué quieres saber sobre el consumo hídrico?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-            with st.spinner("2. El ML Engineer está analizando riesgos..."):
-                # Reducimos la complejidad del prompt para evitar el ValueError
-                query_ml = f"Basado en estos datos: {res_analista}. Responde la duda del usuario: {prompt}"
-                res_ml = agent_ml.run(query_ml)
-    
-            with st.spinner("Consultando al equipo de expertos..."):
-                
-                # EJECUCIÓN EN CASCADA (Orquestación simple)
-                # Paso 1: El analista extrae los hechos actuales
-                res_analista = agent_analista.run(f"Reporte de estado actual para: {prompt}")
-                
-                # Paso 2: El ML Engineer busca anomalías o tendencias basadas en la pregunta
-                res_ml = agent_ml.run(f"Analiza tendencias de riesgo o predicciones para: {prompt}. Datos actuales: {res_analista}")
-                
-                # Paso 3: El Architect consolida todo
-                prompt_final = f"""
-                Usuario pregunta: {prompt}
-                Datos del Analista: {res_analista}
-                Análisis del ML Engineer: {res_ml}
-                Genera una respuesta ejecutiva y clara.
-                """
-                respuesta_final = llm.predict(prompt_final)
-                
-                st.markdown(respuesta_final)
+    with st.chat_message("assistant"):
+        with st.spinner("Consultando al equipo de expertos..."):
+            
+            # --- PASO 1: Ejecuta el Analista ---
+            res_analista_raw = agent_analista.invoke({"input": prompt})
+            res_analista = res_analista_raw["output"]
+            
+            # --- PASO 2: Ejecuta el ML Engineer ---
+            res_ml_raw = agent_ml.invoke({"input": f"Analiza riesgos para: {prompt}. Datos: {res_analista}"})
+            res_ml = res_ml_raw["output"]
 
-                # Manejo de gráficos (Si el analista generó uno)
-                fig = plt.gcf()
-                if fig.get_axes():
-                    st.pyplot(fig)
-                    plt.close(fig)
+            # --- PASO 3: AQUÍ COLOCAS EL CÓDIGO NUEVO (CONSOLIDACIÓN) ---
+            # Aseguramos que los resultados sean strings y no objetos de LangChain
+            contexto_limpio = f"""
+            Datos del Analista: {str(res_analista)}
+            Análisis del ML Engineer: {str(res_ml)}
+            """
 
-            st.session_state.messages.append({"role": "assistant", "content": respuesta_final})
+            prompt_final = f"""
+            Usuario pregunta: {prompt}
+            Contexto técnico: {contexto_limpio}
+            Genera una respuesta ejecutiva y clara.
+            """
+
+            # Ejecución corregida
+            respuesta_final = llm.invoke(prompt_final).content
+            # ---------------------------------------------------------
+
+            # --- PASO 4: Mostrar al usuario ---
+            st.markdown(respuesta_final)
+
+            # (Opcional) Manejo de gráficos si el analista creó uno
+            fig = plt.gcf()
+            if fig.get_axes():
+                st.pyplot(fig)
+                plt.close(fig)
+
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_final})
 else:
     st.sidebar.info("Ingresa tu API Key para activar el panel multi-agente.")
