@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-import vertexai # Si migras a Vertex, si no mantén langchain_google_genai
+#import vertexai # Si migras a Vertex, si no mantén langchain_google_genai
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
