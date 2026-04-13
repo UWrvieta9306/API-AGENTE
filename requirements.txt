@@ -8,3 +8,7 @@ tabulate
 langchain-community
 langchain-google-genai
 langchain-experimental
+# --- Agregadas para Multi-Agentes ---
+google-cloud-aiplatform
+langchain-google-vertexai
+langgraph
