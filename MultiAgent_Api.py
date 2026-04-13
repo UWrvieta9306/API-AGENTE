@@ -50,14 +50,24 @@ if api_key:
 
     # Agente 1: El Analista (Basado en tu código de Pandas Agent)
     agent_analista = create_pandas_dataframe_agent(
-        llm=llm, df=df, verbose=True, prefix=PREFIX_ANALISTA,
-        allow_dangerous_code=True, handle_parsing_errors=True
+        llm=llm, 
+        df=df, 
+        verbose=True, 
+        prefix=PREFIX_ANALISTA,
+        allow_dangerous_code=True, 
+        handle_parsing_errors=True,
+        max_iterations=10
     )
 
     # Agente 2: El ML (También basado en Pandas para cálculos predictivos)
     agent_ml = create_pandas_dataframe_agent(
-        llm=llm, df=df, verbose=True, prefix=PREFIX_ML_ENGINEER,
-        allow_dangerous_code=True, handle_parsing_errors=True
+        llm=llm, 
+        df=df, 
+        verbose=True, 
+        prefix=PREFIX_ML_ENGINEER,
+        allow_dangerous_code=True, 
+        handle_parsing_errors=True,
+        max_iterations=10
     )
 
     # --- 4. INTERFAZ DE CHAT Y LÓGICA DE ORQUESTACIÓN ---
@@ -74,6 +84,16 @@ if api_key:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
+            with st.spinner("1. El Analista está extrayendo datos..."):
+                # Obtenemos la respuesta y nos aseguramos de que sea un string
+                res_analista_raw = agent_analista.run(f"Reporte de estado actual para: {prompt}")
+                res_analista = str(res_analista_raw) 
+
+            with st.spinner("2. El ML Engineer está analizando riesgos..."):
+                # Reducimos la complejidad del prompt para evitar el ValueError
+                query_ml = f"Basado en estos datos: {res_analista}. Responde la duda del usuario: {prompt}"
+                res_ml = agent_ml.run(query_ml)
+    
             with st.spinner("Consultando al equipo de expertos..."):
                 
                 # EJECUCIÓN EN CASCADA (Orquestación simple)
