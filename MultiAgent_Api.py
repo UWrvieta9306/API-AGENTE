@@ -46,7 +46,7 @@ if api_key:
     llm = ChatGoogleGenerativeAI( model="gemini-2.5-flash", temperature=0,
         max_output_tokens=None,
         timeout=None,
-        max_retries=2,))
+        max_retries=2)
 
     # Agente 1: El Analista (Basado en tu código de Pandas Agent)
     agent_analista = create_pandas_dataframe_agent(
