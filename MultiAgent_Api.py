@@ -33,7 +33,7 @@ st.title("🌊 Sistema de Inteligencia Hídrica CDMX")
 
 # Sidebar y Estilos (Se mantienen igual a tu código original)
 with st.sidebar:
-    st.image('Logo_de_Rotoplas.svg.png', width=200)
+    #st.image('Logo_de_Rotoplas.svg.png', width=200)
     api_key = st.text_input("Introduce tu Google API Key", type="password")
 
 if api_key:
