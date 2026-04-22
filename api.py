@@ -108,7 +108,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 with st.sidebar:
-    st.image('Logo_de_Rotoplas.svg.png', width=200)
+    #st.image('Logo_de_Rotoplas.svg.png', width=200)
     st.markdown("---")
     st.subheader("🔑 Configuración")
     api_key = st.text_input("Introduce tu Google API Key", type="password")
